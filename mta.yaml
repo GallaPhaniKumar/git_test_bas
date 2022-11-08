@@ -1,7 +1,7 @@
-_schema-version: "3.1"
+_schema-version: '3.1'
 ID: try_again_ri_mi
 description: A simple CAP project.
-version: 1.0.24
+version: 1.0.25
 modules:
   - name: try_again_ri_mi-srv
     type: nodejs
@@ -12,7 +12,7 @@ modules:
     provides:
       - name: srv-api
         properties:
-          srv-url: ${default-url}
+          srv-url: '${default-url}'
     parameters:
       buildpack: nodejs_buildpack
     build-parameters:
@@ -50,7 +50,7 @@ modules:
       builder: custom
       commands:
         - npm install
-        - npm run build:cf
+        - 'npm run build:cf'
       supported-platforms: []
   - name: try_again_ri_mi-destination-content
     type: com.sap.application.content
@@ -90,7 +90,7 @@ modules:
       builder: custom
       commands:
         - npm install
-        - npm run build:cf
+        - 'npm run build:cf'
       supported-platforms: []
 resources:
   - name: try_again_ri_mi-db
@@ -116,7 +116,7 @@ resources:
                 Name: ui5
                 ProxyType: Internet
                 Type: HTTP
-                URL: https://ui5.sap.com
+                URL: 'https://ui5.sap.com'
             existing_destinations_policy: update
         version: 1.0.0
       service: destination
