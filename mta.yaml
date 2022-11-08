@@ -1,0 +1,141 @@
+_schema-version: "3.1"
+ID: try_again_ri_mi
+description: A simple CAP project.
+version: 1.0.24
+modules:
+  - name: try_again_ri_mi-srv
+    type: nodejs
+    path: gen/srv
+    requires:
+      - name: uaa_try_again_ri_mi
+      - name: try_again_ri_mi-db
+    provides:
+      - name: srv-api
+        properties:
+          srv-url: ${default-url}
+    parameters:
+      buildpack: nodejs_buildpack
+    build-parameters:
+      builder: npm-ci
+  - name: try_again_ri_mi-db-deployer
+    type: hdb
+    path: gen/db
+    requires:
+      - name: try_again_ri_mi-db
+    parameters:
+      buildpack: nodejs_buildpack
+  - name: try_again_ri_mi-app-content
+    type: com.sap.application.content
+    path: .
+    requires:
+      - name: try_again_ri_mi-repo-host
+        parameters:
+          content-target: true
+    build-parameters:
+      build-result: resources
+      requires:
+        - artifacts:
+            - tryagainwebapp.zip
+          name: tryagainwebapp
+          target-path: resources/
+        - artifacts:
+            - freestyleui5app.zip
+          name: freestyleui5app
+          target-path: resources/
+  - name: tryagainwebapp
+    type: html5
+    path: app/try_again_webapp
+    build-parameters:
+      build-result: dist
+      builder: custom
+      commands:
+        - npm install
+        - npm run build:cf
+      supported-platforms: []
+  - name: try_again_ri_mi-destination-content
+    type: com.sap.application.content
+    requires:
+      - name: try_again_ri_mi-destination-service
+        parameters:
+          content-target: true
+      - name: try_again_ri_mi-repo-host
+        parameters:
+          service-key:
+            name: try_again_ri_mi-repo-host-key
+      - name: uaa_try_again_ri_mi
+        parameters:
+          service-key:
+            name: uaa_try_again_ri_mi-key
+    parameters:
+      content:
+        instance:
+          destinations:
+            - Name: try_again_ri_mi_man_router_try_again_ri_mi_repo_host
+              ServiceInstanceName: try_again_ri_mi-html5-srv
+              ServiceKeyName: try_again_ri_mi-repo-host-key
+              sap.cloud.service: try_again_ri_mi_man_router
+            - Authentication: OAuth2UserTokenExchange
+              Name: try_again_ri_mi_man_router_uaa_try_again_ri_mi
+              ServiceInstanceName: try_again_ri_mi-xsuaa-service
+              ServiceKeyName: uaa_try_again_ri_mi-key
+              sap.cloud.service: try_again_ri_mi_man_router
+          existing_destinations_policy: ignore
+    build-parameters:
+      no-source: true
+  - name: freestyleui5app
+    type: html5
+    path: app/freestyle_ui5app
+    build-parameters:
+      build-result: dist
+      builder: custom
+      commands:
+        - npm install
+        - npm run build:cf
+      supported-platforms: []
+resources:
+  - name: try_again_ri_mi-db
+    type: com.sap.xs.hdi-container
+    parameters:
+      service: hana
+      service-plan: hdi-shared
+  - name: try_again_ri_mi-repo-host
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: html5-apps-repo
+      service-name: try_again_ri_mi-html5-srv
+      service-plan: app-host
+  - name: try_again_ri_mi-destination-service
+    type: org.cloudfoundry.managed-service
+    parameters:
+      config:
+        HTML5Runtime_enabled: true
+        init_data:
+          instance:
+            destinations:
+              - Authentication: NoAuthentication
+                Name: ui5
+                ProxyType: Internet
+                Type: HTTP
+                URL: https://ui5.sap.com
+            existing_destinations_policy: update
+        version: 1.0.0
+      service: destination
+      service-name: try_again_ri_mi-destination-service
+      service-plan: lite
+  - name: uaa_try_again_ri_mi
+    type: org.cloudfoundry.managed-service
+    parameters:
+      path: ./xs-security.json
+      service: xsuaa
+      service-name: try_again_ri_mi-xsuaa-service
+      service-plan: application
+      config:
+        tenant-mode: dedicated
+parameters:
+  deploy_mode: html5-repo
+  enable-parallel-deployments: true
+build-parameters:
+  before-all:
+    - builder: custom
+      commands:
+        - npx -p @sap/cds-dk cds build --production

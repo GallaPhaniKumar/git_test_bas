@@ -1,0 +1,72 @@
+{
+  "name": "try_again_ri_mi",
+  "version": "1.0.0",
+  "description": "A simple CAP project.",
+  "repository": "<Add your repository here>",
+  "license": "UNLICENSED",
+  "private": true,
+  "dependencies": {
+    "@sap/cds": ">=5",
+    "@sap/hana-client": "^2.13.22",
+    "@sap/xsenv": "^3.3.2",
+    "@sap/xssec": "^3.2.13",
+    "express": "^4",
+    "hdb": "^0.19.0",
+    "passport": "^0.6.0"
+  },
+  "devDependencies": {
+    "@sap/ux-specification": "^1.102.3",
+    "rimraf": "^3.0.2",
+    "sqlite3": "^5.0.4"
+  },
+  "scripts": {
+    "start": "cds run",
+    "watch-try_again_webapp": "cds watch --open try_again_webapp/webapp/index.html?sap-ui-xx-viewCache=false",
+    "undeploy": "cf undeploy try_again_ri_mi --delete-services --delete-service-keys --delete-service-brokers",
+    "build": "rimraf resources mta_archives && mbt build --mtar archive",
+    "deploy": "cf deploy mta_archives/archive.mtar --retries 1",
+    "watch-freestyle_ui5app": "cds watch --open freestyle_ui5app/webapp/index.html?sap-ui-xx-viewCache=false"
+  },
+  "eslintConfig": {
+    "extends": "eslint:recommended",
+    "env": {
+      "es2020": true,
+      "node": true,
+      "jest": true,
+      "mocha": true
+    },
+    "globals": {
+      "SELECT": true,
+      "INSERT": true,
+      "UPDATE": true,
+      "DELETE": true,
+      "CREATE": true,
+      "DROP": true,
+      "CDL": true,
+      "CQL": true,
+      "CXL": true,
+      "cds": true
+    },
+    "rules": {
+      "no-console": "off",
+      "require-atomic-updates": "off"
+    }
+  },
+  "cds": {
+    "requires": {
+      "db": {
+        "kind": "hana"
+      },
+      "auth": {
+        "kind": "xsuaa"
+      }
+    },
+    "hana": {
+      "deploy-format": "hdbtable"
+    }
+  },
+  "sapux": [
+    "app/try_again_webapp",
+    "app/freestyle_ui5app"
+  ]
+}
